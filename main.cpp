@@ -16,7 +16,7 @@ class Network{
     
     public:
 
-        Network(std::vector<float> in, int outp, mat2d w) : outputSize(outp){
+        Network(std::vector<float> in, int outp, int hidden, mat2d w) : outputSize(outp){
             mat2d m;
             for (int i = 0; i < w.size(); i++){
                 m.push_back(w[i]);
@@ -27,7 +27,21 @@ class Network{
                 m[i].insert(m[i].begin(), in[i]);
             }
 
-            AddLayer(in.size(), m);;
+            AddLayer(in.size(), m);
+
+            for (int i = 0; i < hidden; i++){
+                mat2d m1;
+
+                for (int i = 0; i < outp * 2; i++){
+                    std::vector<float> temp = {0.0, 0.0};
+                    m1.push_back(temp);
+                }
+                for (int i = 0; i < 2; i++){
+                    m1[i].insert(m1[i].begin(), 0.0f);
+                }
+
+                AddLayer(2, m1);
+            }
         }
 
         void AddLayer(int unit, mat2d z){
@@ -58,27 +72,22 @@ class Network{
             
             for (int i = 0; i < layers[0].zweights.size(); i++){
                 float z = Sigmoid(layers[0].zweights[i][0]); 
-                std::vector<float> temp;
-                temp.push_back(z);
+                std::vector<float> temp = {z};
                 res.push_back(temp);
             }
 
 
-
             for (int i = 0; i < layers.size(); i++){
-                for (int j = 0; j < layers[i].zweights.size(); j++){
-                    for (int k = 1; k < layers[i].zweights[0].size(); k++){
-                        float r = 0.0f;
-                        for (int g = 0; g < layers[i].zweights[0].size(); g++){
-                            r += res[j][0] * layers[i].zweights[k][g];
-                        }                       
-                        res[j][k].push_back(Sigmoid(r));
+                std::vector<float> tempV;
+                for (int wCol = 1; wCol < layers[i].zweights[0].size(); wCol++){
+                    float temp;
+                    for (int zRow = 0; zRow < layers[i].zweights.size(); zRow++){
+                        temp += res[zRow][wCol - 1] * layers[i].zweights[zRow][wCol];
                     }
+                    tempV.push_back(Sigmoid(temp));
                 }
-            }
-
-
-                
+                res.push_back(tempV);
+            }   
             return res;
         }
     
@@ -93,10 +102,11 @@ int main(){
     
     std::vector<float> input = {0.3, 0.2};
     int output = 2;
+    int hidden = 1;
     mat2d guess = {{3, 2}, {1.5, 2}};
 
 
-    Network net(input, output, guess);
+    Network net(input, output, hidden, guess);
 
     return 0;
 }
