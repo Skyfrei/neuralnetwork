@@ -1,4 +1,9 @@
-#include "neuralnetwork.h"
+#include "neuralneddtwork.h"
+#include <iostream>
+
+#include <cmath>
+#include <numbers>
+#include <random>
 
 Network::Network(std::vector<float> in, int outp, int hidden, mat2d w) : outputSize(outp){
     mat2d m;
@@ -47,23 +52,28 @@ void Network::AddLayer(int unit, mat2d z){
     layers.push_back(l);
 }
 
+std::vector<float> Network::GetLastCol(mat2d inp){
+    std::vector<float> output;
+    for (int i = 0; i < r.size(); i++){
+        output.push_back(r[i][r.size()]);
+    }
+    return output;
+}
+
+
 int Network::GetClassifier(){
 
     int index;
-   float max = 0.0f;
-   mat2d r = CalculateUnitValue();
-   std::vector<float> output;
+    float max = 0.0f;
+    mat2d r = CalculateNetworkValue();
+    std::vector<float> output = GetLastCol(r);
 
-   for (int i = 0; i < r.size(); i++){
-       output.push_back(r[i][r.size()]);
-   }
-
-   for (int i = 0; i < output.size(); i++){
+    for (int i = 0; i < output.size(); i++){
        if (max < output[i]){
            index = i;
            max = output[i];
        }
-   }
+    }
 
    return index + 1;
 }
@@ -81,7 +91,7 @@ float Network::Sigmoid(float z){
     return 1 / (1 + std::pow(std::numbers::e, - 1 * z));
 }
 
-mat2d Network::CalculateUnitValue(){
+mat2d Network::CalculateNetworkValue(){
     mat2d res;
    
    for (int i = 0; i < layers[0].zweights.size(); i++){
@@ -98,7 +108,7 @@ mat2d Network::CalculateUnitValue(){
            for (int zRow = 0; zRow < layers[i].zweights.size(); zRow++){
                temp += res[zRow][i] * layers[i].zweights[zRow][wCol + 1];
            }
-           tempV.push_back(Sigmoid(temp));
+           tempV.push_back(Sigmoid(temp + layers[i].bias));
        }
        for(int g = 0; g < tempV.size(); g++){
            res[g].push_back(tempV[g]); 
@@ -109,7 +119,44 @@ mat2d Network::CalculateUnitValue(){
    return res;
 }
 
+std::vector<float> Network::Sample(std::vector<float> inp, int size){
+    std::vector<float> res;
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist6(0, size - 1); // distribution in range [1, 6]
+    
+    for (int i = 0; i < size; i++)
+        res.push_back(dist6(rng));
+
+    return res;
+}
+
+
 void Network::SGD(){
+    int batch_size = 10;
+    float realY = 1.0f;
+
+    for (int i = 0; i < epoch; i++){
+        std::vector<float> lastCol = GetLastCol(CalculateNetworkValue());
+        std::vector<float> sample = Sample(lastCol, batch_size);
+//        std::vector<float> realY;
+        std::vector<float> predY =  
+        std::vector<float> loss;
+
+        for (int j = 0; j < batch_size; j++){
+            predY.push_back(lastCol[sample[i]]);
+//            realY.push_back(
+            loss.push_back(std::pow(realY[i] - predY[i]), 2);
+        }
+
+
+
+    }
+
+
+}
+
+void Network::Train(){
 
 
 }
