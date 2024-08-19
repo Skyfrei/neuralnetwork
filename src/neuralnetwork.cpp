@@ -42,6 +42,7 @@ Network::Network(std::vector<float> in, int outp, int hidden, mat2d w) : outputS
          outpp[i].insert(outpp[i].begin(), 0.0f);
      }
      AddLayer(2, outpp);
+     
 
 
 }
@@ -133,20 +134,24 @@ std::vector<float> Network::Sample(std::vector<float> inp, int size){
 
 
 void Network::SGD(){
-    int batch_size = 10;
+    int batch_size = 4;
     float realY = 1.0f;
 
     for (int i = 0; i < epoch; i++){
-        std::vector<float> lastCol = GetLastCol(CalculateNetworkValue());
+        std::vector<float> fullpredY = GetLastCol(CalculateNetworkValue());
         std::vector<float> sample = Sample(lastCol, batch_size);
 //        std::vector<float> realY;
-        std::vector<float> predY =  
+        std::vector<float> predY;
         std::vector<float> loss;
+        std::vector<float> gradVec;
+
 
         for (int j = 0; j < batch_size; j++){
-            predY.push_back(lastCol[sample[i]]);
-//            realY.push_back(
+            predY.push_back(fullpredY[sample[i]]);
+//            realY.push_back()(
             loss.push_back(std::pow(realY[i] - predY[i]), 2);
+//            gradVec.push_back(loss[i]) / batch_size);
+//
         }
 
 
